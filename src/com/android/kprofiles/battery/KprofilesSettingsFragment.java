@@ -49,7 +49,7 @@ public class KprofilesSettingsFragment extends PreferenceFragment implements
     private static final String KPROFILES_MODES_NODE = "/sys/module/kprofiles/parameters/kp_mode";
     private static final String KPROFILES_MODES_INFO = "pref_kprofiles_modes_info";
 
-    private boolean iskProfilesModesSupported = FileUtils.fileExists(KPROFILES_MODES_NODE);
+    private static final boolean isKModesSupported = FileUtils.fileExists(KPROFILES_MODES_NODE);
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -66,7 +66,7 @@ public class KprofilesSettingsFragment extends PreferenceFragment implements
             kProfilesAutoPreference.setEnabled(false);
         }
         kProfilesModesPreference = (ListPreference) findPreference(KPROFILES_MODES_KEY);
-        if (iskProfilesModesSupported == true) {
+        if (isKModesSupported) {
             kProfilesModesPreference.setEnabled(true);
             kProfilesModesPreference.setOnPreferenceChangeListener(this);
             updateTitle();
@@ -76,9 +76,7 @@ public class KprofilesSettingsFragment extends PreferenceFragment implements
             updateTitle();
         }
         kProfilesModesInfo = (Preference) findPreference(KPROFILES_MODES_INFO);
-        if (iskProfilesModesSupported == false) {
-            kProfilesModesInfo.setEnabled(false);
-        }
+        kProfilesModesInfo.setEnabled(isKModesSupported);
     }
 
     @Override
@@ -122,27 +120,28 @@ public class KprofilesSettingsFragment extends PreferenceFragment implements
 
     private String modesDesc() {
         String descrpition = null;
-        if (iskProfilesModesSupported == true) {
-            String mode = getCurrentKProfilesMode();
-            switch (mode) {
-                case "0":
-                    descrpition = getString(R.string.kprofiles_modes_none_description);
-                    break;
-                case "1":
-                    descrpition = getString(R.string.kprofiles_modes_battery_description);
-                    break;
-                case "2":
-                    descrpition = getString(R.string.kprofiles_modes_balanced_description);
-                    break;
-                case "3":
-                    descrpition = getString(R.string.kprofiles_modes_performance_description);
-                    break;
-                default:
-                    descrpition = getString(R.string.kprofiles_modes_none_description);
-                    break;
-            }
-        } else {
-            descrpition = getString(R.string.kprofiles_not_supported); 
+
+        if (!isKModesSupported) {
+            return getString(R.string.kprofiles_not_supported);
+        }
+
+        String mode = getCurrentKProfilesMode();
+        switch (mode) {
+            case "0":
+                descrpition = getString(R.string.kprofiles_modes_none_description);
+                break;
+            case "1":
+                descrpition = getString(R.string.kprofiles_modes_battery_description);
+                break;
+            case "2":
+                descrpition = getString(R.string.kprofiles_modes_balanced_description);
+                break;
+            case "3":
+                descrpition = getString(R.string.kprofiles_modes_performance_description);
+                break;
+            default:
+                descrpition = getString(R.string.kprofiles_modes_none_description);
+                break;
         }
         return descrpition;
     }

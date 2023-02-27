@@ -18,18 +18,19 @@ public class KProfilesModesTileService extends TileService {
     private static final String KPROFILES_MODES_KEY = "kprofiles_modes";
     private static final String KPROFILES_MODES_NODE = "/sys/module/kprofiles/parameters/kp_mode";
 
-    private boolean iskProfilesModesSupported = FileUtils.fileExists(KPROFILES_MODES_NODE);
+    private static final boolean isKModesSupported = FileUtils.fileExists(KPROFILES_MODES_NODE);
 
     @Override
     public void onCreate() {
-        if (iskProfilesModesSupported == true) {
-            super.onCreate();
-            mContext = getApplicationContext();
-        } else {
+        if (!isKModesSupported) {
             Tile tile = getQsTile();
             tile.setState(Tile.STATE_UNAVAILABLE);
             tile.updateTile();
+            return;
         }
+
+        super.onCreate();
+        mContext = getApplicationContext();
     }
 
     @Override
@@ -49,10 +50,12 @@ public class KProfilesModesTileService extends TileService {
 
     @Override
     public void onStartListening() {
-        if (iskProfilesModesSupported == true) {
-            updateTileContent();
-            super.onStartListening();
+        if (!isKModesSupported) {
+            return;
         }
+
+        updateTileContent();
+        super.onStartListening();
     }
 
     @Override
@@ -62,25 +65,28 @@ public class KProfilesModesTileService extends TileService {
 
     @Override
     public void onClick() {
-        if (iskProfilesModesSupported == true) {
-            String mode = getMode();
-            switch (mode) {
-                case "0":
-                    mode = "1"; // Set mode from none to battery
-                    break;
-                case "1":
-                    mode = "2"; // Set mode from battery to balanced
-                    break;
-                case "2":
-                    mode = "3"; // Set mode from balanced to performance
-                    break;
-                case "3":
-                    mode = "0"; // Set mode from performance to none
-                    break;
-            }
-            setMode(mode);
-            updateTileContent();
+        if (!isKModesSupported) {
+            super.onClick();
+            return;
         }
+
+        String mode = getMode();
+        switch (mode) {
+            case "0":
+                mode = "1"; // Set mode from none to battery
+                break;
+            case "1":
+                mode = "2"; // Set mode from battery to balanced
+                break;
+            case "2":
+                mode = "3"; // Set mode from balanced to performance
+                break;
+            case "3":
+                mode = "0"; // Set mode from performance to none
+                break;
+        }
+        setMode(mode);
+        updateTileContent();
         super.onClick();
     }
 
